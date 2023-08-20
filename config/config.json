@@ -1,0 +1,7 @@
+{
+    "enable": true,
+    "changeCustomTraders": false,
+    "customTradersToExclude": [],
+    "seed": 900,
+    "debug": false
+}
