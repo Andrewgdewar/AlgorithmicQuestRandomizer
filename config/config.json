@@ -1,7 +1,13 @@
 {
     "enable": true,
-    "changeCustomTraders": false,
-    "customTradersToExclude": [],
+    "difficulty": "medium",
+    "EXAMPLE_DIFFICULTY_Values_FOR_ABOVE": [
+        "easy",
+        "medium",
+        "hard",
+        "masochist",
+        "random"
+    ],
     "seed": 900,
     "debug": false
 }

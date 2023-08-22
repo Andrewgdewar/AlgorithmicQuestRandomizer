@@ -3,28 +3,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mergeDeep = exports.isObject = exports.cloneDeep = exports.deDupeArr = exports.createMatchingSimilarItemList = exports.checkParentRecursive = exports.seededRandom = exports.stringToNum = exports.mountParent = exports.chargeParent = exports.handguardParent = exports.barrelParent = exports.gasblockParent = exports.receiverParent = exports.muzzleParent = exports.pistolGripParent = exports.stockParent = exports.sightParent = exports.moneyParent = exports.masterMod = exports.modParent = exports.medsParent = exports.keyParent = exports.barterParent = exports.magParent = exports.ammoParent = exports.headwearParent = void 0;
+exports.checkParentRecursive = exports.seededRandom = exports.replaceTextForQuest = exports.stringToNum = exports.difficulties = exports.moneyParent = exports.keyParent = void 0;
 const config_json_1 = __importDefault(require("../config/config.json"));
-exports.headwearParent = "5a341c4086f77401f2541505";
-exports.ammoParent = "5485a8684bdc2da71d8b4567";
-exports.magParent = "5448bc234bdc2d3c308b4569";
-exports.barterParent = "5448eb774bdc2d0a728b4567";
+const locales_json_1 = __importDefault(require("../config/locales.json"));
 exports.keyParent = "543be5e94bdc2df1348b4568";
-exports.medsParent = "543be5664bdc2dd4348b4569";
-exports.modParent = "5448fe124bdc2da5018b4567";
-exports.masterMod = "55802f4a4bdc2ddb688b4569";
 exports.moneyParent = "543be5dd4bdc2deb348b4569";
-exports.sightParent = "5448fe7a4bdc2d6f028b456b";
-exports.stockParent = "55818a594bdc2db9688b456a";
-exports.pistolGripParent = "55818a684bdc2ddd698b456d";
-exports.muzzleParent = "5448fe394bdc2d0d028b456c";
-exports.receiverParent = "55818a304bdc2db5418b457d";
-exports.gasblockParent = "56ea9461d2720b67698b456f";
-exports.barrelParent = "555ef6e44bdc2de9068b457e";
-exports.handguardParent = "55818a104bdc2db9688b4569";
-exports.chargeParent = "55818a104bdc2db9688b4569";
-exports.mountParent = "55818b224bdc2dde698b456f";
 const chars = " abcdefghijklmnopqrstuvwxyz1234567890".split("");
+exports.difficulties = {
+    "easy": { high: 100000, low: 0.8 },
+    "medium": { high: 10, low: 5 },
+    "hard": { high: 5, low: 10 },
+    "masochist": { high: 2, low: 1000000 },
+    "random": { high: 1000000000, low: 1000000000 },
+};
 const stringToNum = (str) => {
     if (!str)
         return 0;
@@ -41,6 +32,56 @@ const stringToNum = (str) => {
     return result;
 };
 exports.stringToNum = stringToNum;
+const replaceTextForQuest = (locales, refId, target, alternate) => {
+    const newId = refId + config_json_1.default.seed;
+    const enlocal = locales.global.en;
+    const itemNameId = `${target} Name`;
+    const itemShortNameId = `${target} ShortName`;
+    const alternateNameId = `${alternate} Name`;
+    const alternateShortNameId = `${alternate} ShortName`;
+    const itemEnName = enlocal[itemNameId];
+    const itemEnShortName = enlocal[itemShortNameId];
+    const alternateEnName = enlocal[alternateNameId];
+    const alternateEnShortName = enlocal[alternateShortNameId];
+    const localValue = locales.global.en[refId];
+    let type = "";
+    switch (true) {
+        case localValue.includes("Hand over"):
+            type = "handover";
+            break;
+        case localValue.includes("Find"):
+            type = "find";
+            break;
+        case localValue.includes("% durability"):
+            type = "armor";
+            break;
+        case localValue.includes("Obtain"):
+            type = "obtain";
+            break;
+        default:
+            console.warn("AlgorithmicQuestRandomizer:", locales.global.en[refId], "NOT Replaced:", localValue, itemEnShortName, itemEnName, alternateEnName, alternateEnShortName);
+            break;
+    }
+    Object.keys(locales.global).forEach(language => {
+        const local = locales.global[language];
+        const alternateName = local[alternateNameId];
+        const alternateShortName = local[alternateShortNameId];
+        if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
+            console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced for language:", locales.languages[language], "missing value: ", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId]);
+            return "";
+        }
+        const final = locales_json_1.default?.[language]?.[type] || locales_json_1.default?.["en"]?.[type];
+        if (!type || !final) {
+            console.log("AlgorithmicQuestRandomizer: There's likely an issue with the locales file.");
+            return "";
+        }
+        const newValue = final.replace("<alternateName>", alternateName).replace("<alternateShortName>", alternateShortName);
+        language === "ru" && console.log(local[refId], newValue);
+        local[newId] = newValue;
+    });
+    return newId;
+};
+exports.replaceTextForQuest = replaceTextForQuest;
 // in order to work 'Math.seed' must NOT be undefined,
 // so in any case, you HAVE to provide a Math.seed
 const seededRandom = (max, min, target) => {
@@ -61,32 +102,3 @@ const checkParentRecursive = (parentId, items, queryIds) => {
     return (0, exports.checkParentRecursive)(items[parentId]._parent, items, queryIds);
 };
 exports.checkParentRecursive = checkParentRecursive;
-const createMatchingSimilarItemList = () => { };
-exports.createMatchingSimilarItemList = createMatchingSimilarItemList;
-const deDupeArr = (arr) => [...new Set(arr)];
-exports.deDupeArr = deDupeArr;
-const cloneDeep = (objectToClone) => JSON.parse(JSON.stringify(objectToClone));
-exports.cloneDeep = cloneDeep;
-const isObject = (item) => {
-    return (item && typeof item === "object" && !Array.isArray(item));
-};
-exports.isObject = isObject;
-const mergeDeep = (target, ...sources) => {
-    if (!sources.length)
-        return target;
-    const source = sources.shift();
-    if ((0, exports.isObject)(target) && (0, exports.isObject)(source)) {
-        for (const key in source) {
-            if ((0, exports.isObject)(source[key])) {
-                if (!target[key])
-                    Object.assign(target, { [key]: {} });
-                (0, exports.mergeDeep)(target[key], source[key]);
-            }
-            else {
-                Object.assign(target, { [key]: source[key] });
-            }
-        }
-    }
-    return (0, exports.mergeDeep)(target, ...sources);
-};
-exports.mergeDeep = mergeDeep;

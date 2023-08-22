@@ -1,9 +1,20 @@
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem"
 import config from "../config/config.json";
+import localesConfig from "../config/locales.json";
+import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 
 
 export const keyParent = "543be5e94bdc2df1348b4568"
+export const moneyParent = "543be5dd4bdc2deb348b4569"
 const chars = " abcdefghijklmnopqrstuvwxyz1234567890".split("")
+
+export const difficulties = {
+    "easy": { high: 100000, low: 0.8 },
+    "medium": { high: 10, low: 5 },
+    "hard": { high: 5, low: 10 },
+    "masochist": { high: 2, low: 1000000 },
+    "random": { high: 1000000000, low: 1000000000 },
+}
 
 export const stringToNum = (str: string) => {
     if (!str) return 0
@@ -19,56 +30,61 @@ export const stringToNum = (str: string) => {
     return result
 }
 
-export const replaceTextForQuest = (local: Record<string, string>, refId: string, target: string, alternate: string) => {
-    // const descriptionToReplace = `5967733e86f774602332fc84 description`
-    const localValue = local[refId]
+export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target: string, alternate: string) => {
     const newId = refId + config.seed
-    // console.log(localValue)
+
+    const enlocal = locales.global.en
     const itemNameId = `${target} Name`
     const itemShortNameId = `${target} ShortName`
     const alternateNameId = `${alternate} Name`
     const alternateShortNameId = `${alternate} ShortName`
+    const itemEnName = enlocal[itemNameId]
+    const itemEnShortName = enlocal[itemShortNameId]
+    const alternateEnName = enlocal[alternateNameId]
+    const alternateEnShortName = enlocal[alternateShortNameId]
 
-    if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
-        console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced, missing value:", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId])
-        return ""
-    }
-
-    const itemName = local[itemNameId]
-    const itemShortName = local[itemShortNameId]
-    const alternateName = local[alternateNameId]
-    const alternateShortName = local[alternateShortNameId]
-
-    const handover = `Hand over the ${alternateName} (${alternateShortName})`
-    const find = `Find ${alternateName} in raid`
-    const armorDura = `Obtain ${alternateName} in 0-50% durability`
-    const obtain = `Obtain ${alternateName}`
-
-
-    let final = ""
+    const localValue = locales.global.en[refId]
+    let type: "" | "handover" | "obtain" | "armor" | "find" = ""
     switch (true) {
-        case localValue.includes("Hand over the"):
-            // console.log(/*localValue, "=", */handover)
-            final = handover
+        case localValue.includes("Hand over"):
+            type = "handover"
             break;
         case localValue.includes("Find"):
-            // console.log(/*localValue, "=", */find)
-            final = find
+            type = "find"
             break;
         case localValue.includes("% durability"):
-            // console.log(/*localValue, "=", */armorDura)
-            final = armorDura
+            type = "armor"
             break;
         case localValue.includes("Obtain"):
-            // console.log(/*localValue, "=", */obtain)
-            final = obtain
+            type = "obtain"
             break;
         default:
-            console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced:", localValue, itemShortName, itemName, alternateName, alternateShortName)
+            console.warn("AlgorithmicQuestRandomizer:", locales.global.en[refId], "NOT Replaced:", localValue, itemEnShortName, itemEnName, alternateEnName, alternateEnShortName)
             break;
     }
-    if (!final) return ""
-    local[newId] = final
+
+    Object.keys(locales.global).forEach(language => {
+        const local = locales.global[language]
+        const alternateName = local[alternateNameId]
+        const alternateShortName = local[alternateShortNameId]
+
+        if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
+            console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced for language:", locales.languages[language], "missing value: ", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId])
+            return ""
+        }
+
+        const final = localesConfig?.[language]?.[type] || localesConfig?.["en"]?.[type]
+
+        if (!type || !final) {
+            console.log("AlgorithmicQuestRandomizer: There's likely an issue with the locales file.")
+            return ""
+        }
+
+        const newValue = final.replace("<alternateName>", alternateName).replace("<alternateShortName>", alternateShortName)
+        // language === "ru" && console.log(local[refId], newValue)
+        local[newId] = newValue
+    })
+
     return newId
 }
 
