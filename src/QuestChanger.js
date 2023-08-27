@@ -31,7 +31,8 @@ function QuestChanger(container) {
             parentMapper[items[tpl]._parent] = { ...parentMapper[items[tpl]._parent] || {}, [tpl]: relativeProbability };
         }
     });
-    const getAlternate = (target, currentlyUsed, questId, parent) => {
+    const getAlternate = (target, currentlyUsed, questId, parent, count) => {
+        let quantity = Number(count);
         const { high, low } = utils_1.difficulties[config_json_1.default.difficulty];
         const itemsParent = items[target]._parent;
         const itemsRarity = parentMapper[itemsParent][target];
@@ -42,7 +43,14 @@ function QuestChanger(container) {
             return itemsRarity * high > rarity && rarity * low > itemsRarity;
         });
         const alternateIndex = (0, utils_1.seededRandom)(alternates.length - 1, 0, target + questId);
-        return alternates[alternateIndex];
+        const alternateId = alternates[alternateIndex];
+        const alternateRarity = changeItems[alternateId];
+        let newCount = quantity * (alternateRarity / itemsRarity);
+        if (newCount > (quantity * config_json_1.default.maxQuantityModifier))
+            newCount = quantity * config_json_1.default.maxQuantityModifier;
+        if (newCount < 1)
+            newCount = 1;
+        return { alternateId, quantity: Math.round(newCount) };
     };
     let numOfChangedItems = 0;
     Object.keys(quests).forEach(questId => {
@@ -55,14 +63,12 @@ function QuestChanger(container) {
                     return;
                 const target = _props.target?.[0] || _props.target;
                 if (changeItems[target] && !(0, utils_1.checkParentRecursive)(target, items, [utils_1.moneyParent])) {
-                    const alternateId = getAlternate(target, currentlyUsed, questId, _parent);
+                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value);
                     if (!alternateId || !items[alternateId])
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
-                    const questReqId = (0, utils_1.replaceTextForQuest)(locales, _props.id, target, alternateId);
+                    const questReqId = (0, utils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId);
                     if (!questReqId)
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
-                    const alternate = items[alternateId]._name;
-                    const current = items[target]._name;
                     quests[questId].conditions.AvailableForFinish[index]._props.id = questReqId;
                     if (typeof _props.target === "string") {
                         quests[questId].conditions.AvailableForFinish[index]._props.target = alternateId;
@@ -74,7 +80,7 @@ function QuestChanger(container) {
                     const alternateNameId = `${alternateId} Name`;
                     const itemName = local[itemShortNameId];
                     const alternateName = local[alternateNameId];
-                    config_json_1.default.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, "====>", alternateName, changeItems[target], changeItems[alternateId]);
+                    config_json_1.default.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId]);
                     numOfChangedItems++;
                     changed = true;
                     currentlyUsed.add(alternateId + _parent);

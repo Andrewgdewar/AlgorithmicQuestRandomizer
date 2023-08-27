@@ -37,7 +37,8 @@ export default function QuestChanger(
         }
     })
 
-    const getAlternate = (target: string, currentlyUsed: Set<string>, questId: string, parent: string) => {
+    const getAlternate = (target: string, currentlyUsed: Set<string>, questId: string, parent: string, count: number) => {
+        let quantity = Number(count)
         const { high, low } = difficulties[config.difficulty]
         const itemsParent = items[target]._parent
         const itemsRarity = parentMapper[itemsParent][target]
@@ -47,7 +48,13 @@ export default function QuestChanger(
             return itemsRarity * high > rarity && rarity * low > itemsRarity
         })
         const alternateIndex = seededRandom(alternates.length - 1, 0, target + questId)
-        return alternates[alternateIndex]
+        const alternateId = alternates[alternateIndex]
+        const alternateRarity = changeItems[alternateId]
+
+        let newCount = quantity * (alternateRarity / itemsRarity)
+        if (newCount > (quantity * config.maxQuantityModifier)) newCount = quantity * config.maxQuantityModifier
+        if (newCount < 1) newCount = 1
+        return { alternateId, quantity: Math.round(newCount) }
     }
 
     let numOfChangedItems = 0
@@ -64,12 +71,11 @@ export default function QuestChanger(
                 const target = _props.target?.[0] || _props.target as string;
 
                 if (changeItems[target] && !checkParentRecursive(target, items, [moneyParent])) {
-                    const alternateId = getAlternate(target, currentlyUsed, questId, _parent)
+                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value)
                     if (!alternateId || !items[alternateId]) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)
-                    const questReqId = replaceTextForQuest(locales, _props.id, target, alternateId)
+                    const questReqId = replaceTextForQuest(locales, _props.id, target, alternateId, questId)
                     if (!questReqId) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)
-                    const alternate = items[alternateId]._name
-                    const current = items[target]._name
+
                     quests[questId].conditions.AvailableForFinish[index]._props.id = questReqId
 
                     if (typeof _props.target === "string") {
@@ -83,7 +89,7 @@ export default function QuestChanger(
                     const alternateName = local[alternateNameId]
 
 
-                    config.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, "====>", alternateName, changeItems[target], changeItems[alternateId])
+                    config.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId])
 
                     numOfChangedItems++
                     changed = true

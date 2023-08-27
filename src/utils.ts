@@ -30,11 +30,12 @@ export const stringToNum = (str: string) => {
     return result
 }
 
-export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target: string, alternate: string) => {
+export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target: string, alternate: string, questId: string) => {
     const newId = refId + config.seed
 
     const enlocal = locales.global.en
     const itemNameId = `${target} Name`
+    const itemDescriptionId = `${questId} description`
     const itemShortNameId = `${target} ShortName`
     const alternateNameId = `${alternate} Name`
     const alternateShortNameId = `${alternate} ShortName`
@@ -67,6 +68,13 @@ export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target:
         const local = locales.global[language]
         const alternateName = local[alternateNameId]
         const alternateShortName = local[alternateShortNameId]
+        const questDescription = local[itemDescriptionId]
+        const itemNameMulti = local[itemNameId]
+        const itemShortNameMulti = local[itemShortNameId]
+
+        if (questDescription.includes(itemNameMulti) || questDescription.includes(itemShortNameMulti)) {
+            local[itemDescriptionId] = questDescription.replace(itemNameMulti, alternateName).replace(itemShortNameMulti, alternateShortName)
+        }
 
         if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
             console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced for language:", locales.languages[language], "missing value: ", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId])

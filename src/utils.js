@@ -32,10 +32,11 @@ const stringToNum = (str) => {
     return result;
 };
 exports.stringToNum = stringToNum;
-const replaceTextForQuest = (locales, refId, target, alternate) => {
+const replaceTextForQuest = (locales, refId, target, alternate, questId) => {
     const newId = refId + config_json_1.default.seed;
     const enlocal = locales.global.en;
     const itemNameId = `${target} Name`;
+    const itemDescriptionId = `${questId} description`;
     const itemShortNameId = `${target} ShortName`;
     const alternateNameId = `${alternate} Name`;
     const alternateShortNameId = `${alternate} ShortName`;
@@ -66,6 +67,12 @@ const replaceTextForQuest = (locales, refId, target, alternate) => {
         const local = locales.global[language];
         const alternateName = local[alternateNameId];
         const alternateShortName = local[alternateShortNameId];
+        const questDescription = local[itemDescriptionId];
+        const itemNameMulti = local[itemNameId];
+        const itemShortNameMulti = local[itemShortNameId];
+        if (questDescription.includes(itemNameMulti) || questDescription.includes(itemShortNameMulti)) {
+            local[itemDescriptionId] = questDescription.replace(itemNameMulti, alternateName).replace(itemShortNameMulti, alternateShortName);
+        }
         if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
             console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced for language:", locales.languages[language], "missing value: ", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId]);
             return "";
@@ -76,7 +83,7 @@ const replaceTextForQuest = (locales, refId, target, alternate) => {
             return "";
         }
         const newValue = final.replace("<alternateName>", alternateName).replace("<alternateShortName>", alternateShortName);
-        language === "ru" && console.log(local[refId], newValue);
+        // language === "ru" && console.log(local[refId], newValue)
         local[newId] = newValue;
     });
     return newId;
