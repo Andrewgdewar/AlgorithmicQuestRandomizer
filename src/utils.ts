@@ -2,6 +2,7 @@ import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem"
 import config from "../config/config.json";
 import localesConfig from "../config/locales.json";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
+import { AvailableForProps } from "@spt-aki/models/eft/common/tables/IQuest";
 
 
 export const keyParent = "543be5e94bdc2df1348b4568"
@@ -30,7 +31,8 @@ export const stringToNum = (str: string) => {
     return result
 }
 
-export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target: string, alternate: string, questId: string) => {
+export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target: string, alternate: string, questId: string, props: AvailableForProps) => {
+    const { minDurability, maxDurability } = props
     const newId = refId + config.seed
 
     const enlocal = locales.global.en
@@ -88,8 +90,11 @@ export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target:
             return ""
         }
 
-        const newValue = final.replace("<alternateName>", alternateName).replace("<alternateShortName>", alternateShortName)
-        // language === "ru" && console.log(local[refId], newValue)
+        const newValue = final.replace("<alternateName>", alternateName)
+            .replace("<alternateShortName>", alternateShortName)
+            .replace("<minDurability>", minDurability)
+            .replace("<maxDurability>", maxDurability)
+
         local[newId] = newValue
     })
 

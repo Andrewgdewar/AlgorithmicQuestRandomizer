@@ -1,7 +1,7 @@
 import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
 import { DependencyContainer } from "tsyringe";
 import config from "../config/config.json";
-import { IQuest } from "@spt-aki/models/eft/common/tables/IQuest";
+import { AvailableForProps, IQuest } from "@spt-aki/models/eft/common/tables/IQuest";
 import { checkParentRecursive, keyParent, replaceTextForQuest, seededRandom, moneyParent, difficulties } from "./utils";
 
 
@@ -37,8 +37,8 @@ export default function QuestChanger(
         }
     })
 
-    const getAlternate = (target: string, currentlyUsed: Set<string>, questId: string, parent: string, count: number) => {
-        let quantity = Number(count)
+    const getAlternate = (target: string, currentlyUsed: Set<string>, questId: string, parent: string, value?: number) => {
+        let quantity = Number(value)
         const { high, low } = difficulties[config.difficulty]
         const itemsParent = items[target]._parent
         const itemsRarity = parentMapper[itemsParent][target]
@@ -51,12 +51,13 @@ export default function QuestChanger(
         const alternateId = alternates[alternateIndex]
         const alternateRarity = changeItems[alternateId]
 
+
         let newCount = quantity * (alternateRarity / itemsRarity)
         if (newCount > (quantity * config.maxQuantityModifier)) newCount = quantity * config.maxQuantityModifier
-        if (newCount < 1) newCount = 1
+        if (newCount < 1/* || checkParentRecursive(parent, items, [""])*/) newCount = 1
         return { alternateId, quantity: Math.round(newCount) }
     }
-
+    let fixedVisibilityRefs = 0
     let numOfChangedItems = 0
 
     Object.keys(quests).forEach(questId => {
@@ -73,9 +74,9 @@ export default function QuestChanger(
                 if (changeItems[target] && !checkParentRecursive(target, items, [moneyParent])) {
                     const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value)
                     if (!alternateId || !items[alternateId]) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)
-                    const questReqId = replaceTextForQuest(locales, _props.id, target, alternateId, questId)
+                    const questReqId = replaceTextForQuest(locales, _props.id, target, alternateId, questId, _props)
                     if (!questReqId) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)
-
+                    const propsIdCopy = _props.id
                     quests[questId].conditions.AvailableForFinish[index]._props.id = questReqId
 
                     if (typeof _props.target === "string") {
@@ -83,13 +84,25 @@ export default function QuestChanger(
                     } else {
                         quests[questId].conditions.AvailableForFinish[index]._props.target = _props.target.map(() => alternateId)
                     }
+
                     const itemShortNameId = `${target} Name`
                     const alternateNameId = `${alternateId} Name`
                     const itemName = local[itemShortNameId]
                     const alternateName = local[alternateNameId]
 
+                    if (config.debug && _parent === "HandoverItem") { console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId]) }
 
-                    config.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId])
+                    (quests[questId].conditions.AvailableForFinish[index]._props.value as any) = quantity.toString()
+
+                    quest.conditions?.AvailableForFinish.forEach(({ _props: { visibilityConditions } }, internalIndex) => {
+                        if (internalIndex === index || !visibilityConditions) return;
+                        visibilityConditions.forEach((condition, conditionIndex) => {
+                            if ((condition as any)?._props?.target.includes(propsIdCopy)) {
+                                fixedVisibilityRefs++
+                                (quest.conditions.AvailableForFinish[internalIndex]._props.visibilityConditions[conditionIndex] as any)._props.target = questReqId
+                            }
+                        })
+                    })
 
                     numOfChangedItems++
                     changed = true
@@ -98,8 +111,10 @@ export default function QuestChanger(
                 }
             }
         })
+        // if (quest._id === "5ae4495c86f7744e87761355") console.log(JSON.stringify(quest))
         config.debug && changed && console.log(quest.QuestName.toUpperCase(), "\n")
-    })
 
+    })
+    config.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!")
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config.seed)
 }

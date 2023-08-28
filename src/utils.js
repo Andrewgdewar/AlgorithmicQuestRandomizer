@@ -32,7 +32,8 @@ const stringToNum = (str) => {
     return result;
 };
 exports.stringToNum = stringToNum;
-const replaceTextForQuest = (locales, refId, target, alternate, questId) => {
+const replaceTextForQuest = (locales, refId, target, alternate, questId, props) => {
+    const { minDurability, maxDurability } = props;
     const newId = refId + config_json_1.default.seed;
     const enlocal = locales.global.en;
     const itemNameId = `${target} Name`;
@@ -82,8 +83,10 @@ const replaceTextForQuest = (locales, refId, target, alternate, questId) => {
             console.log("AlgorithmicQuestRandomizer: There's likely an issue with the locales file.");
             return "";
         }
-        const newValue = final.replace("<alternateName>", alternateName).replace("<alternateShortName>", alternateShortName);
-        // language === "ru" && console.log(local[refId], newValue)
+        const newValue = final.replace("<alternateName>", alternateName)
+            .replace("<alternateShortName>", alternateShortName)
+            .replace("<minDurability>", minDurability)
+            .replace("<maxDurability>", maxDurability);
         local[newId] = newValue;
     });
     return newId;

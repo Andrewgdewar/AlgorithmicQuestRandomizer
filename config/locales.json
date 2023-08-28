@@ -2,13 +2,13 @@
     "en": {
         "handover": "Hand over the <alternateName> (<alternateShortName>)",
         "find": "Find <alternateName> in raid",
-        "armor": "Obtain <alternateName> in 0-50% durability",
+        "armor": "Obtain <alternateName> with <minDurability>-<maxDurability>% durability",
         "obtain": "Obtain <alternateName>"
     },
     "ch": {
         "handover": "交出 <alternateName> (<alternateShortName>)",
         "find": "找到<alternateName>",
-        "armor": "获得 0-50% 耐久度的 <alternateName>",
+        "armor": "获得 <minDurability>-<maxDurability>% 耐久度的 <alternateName>",
         "obtain": "获取 <alternateName>"
     },
     "cz": {
@@ -90,9 +90,9 @@
         "obtain": ""
     },
     "ru": {
-        "handover": "",
-        "find": "",
-        "armor": "",
-        "obtain": ""
+        "handover": "Передать <alternateName> (<alternateShortName>)",
+        "find": "Найти в рейде <alternateName>",
+        "armor": "Найти и передать <alternateName> <minDurability>-<maxDurability>% прочности",
+        "obtain": "Найти и передать <alternateName>"
     }
 }

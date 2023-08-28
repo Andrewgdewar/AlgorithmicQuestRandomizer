@@ -31,8 +31,8 @@ function QuestChanger(container) {
             parentMapper[items[tpl]._parent] = { ...parentMapper[items[tpl]._parent] || {}, [tpl]: relativeProbability };
         }
     });
-    const getAlternate = (target, currentlyUsed, questId, parent, count) => {
-        let quantity = Number(count);
+    const getAlternate = (target, currentlyUsed, questId, parent, value) => {
+        let quantity = Number(value);
         const { high, low } = utils_1.difficulties[config_json_1.default.difficulty];
         const itemsParent = items[target]._parent;
         const itemsRarity = parentMapper[itemsParent][target];
@@ -48,10 +48,11 @@ function QuestChanger(container) {
         let newCount = quantity * (alternateRarity / itemsRarity);
         if (newCount > (quantity * config_json_1.default.maxQuantityModifier))
             newCount = quantity * config_json_1.default.maxQuantityModifier;
-        if (newCount < 1)
+        if (newCount < 1 /* || checkParentRecursive(parent, items, [""])*/)
             newCount = 1;
         return { alternateId, quantity: Math.round(newCount) };
     };
+    let fixedVisibilityRefs = 0;
     let numOfChangedItems = 0;
     Object.keys(quests).forEach(questId => {
         const quest = quests[questId];
@@ -66,9 +67,10 @@ function QuestChanger(container) {
                     const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value);
                     if (!alternateId || !items[alternateId])
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
-                    const questReqId = (0, utils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId);
+                    const questReqId = (0, utils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId, _props);
                     if (!questReqId)
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
+                    const propsIdCopy = _props.id;
                     quests[questId].conditions.AvailableForFinish[index]._props.id = questReqId;
                     if (typeof _props.target === "string") {
                         quests[questId].conditions.AvailableForFinish[index]._props.target = alternateId;
@@ -80,15 +82,30 @@ function QuestChanger(container) {
                     const alternateNameId = `${alternateId} Name`;
                     const itemName = local[itemShortNameId];
                     const alternateName = local[alternateNameId];
-                    config_json_1.default.debug && _parent === "HandoverItem" && console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId]);
+                    if (config_json_1.default.debug && _parent === "HandoverItem") {
+                        console.log("Switching:", itemName, Number(_props.value), "====>", quantity, alternateName, changeItems[target], changeItems[alternateId]);
+                    }
+                    quests[questId].conditions.AvailableForFinish[index]._props.value = quantity.toString();
+                    quest.conditions?.AvailableForFinish.forEach(({ _props: { visibilityConditions } }, internalIndex) => {
+                        if (internalIndex === index || !visibilityConditions)
+                            return;
+                        visibilityConditions.forEach((condition, conditionIndex) => {
+                            if (condition?._props?.target.includes(propsIdCopy)) {
+                                fixedVisibilityRefs++;
+                                quest.conditions.AvailableForFinish[internalIndex]._props.visibilityConditions[conditionIndex]._props.target = questReqId;
+                            }
+                        });
+                    });
                     numOfChangedItems++;
                     changed = true;
                     currentlyUsed.add(alternateId + _parent);
                 }
             }
         });
+        // if (quest._id === "5ae4495c86f7744e87761355") console.log(JSON.stringify(quest))
         config_json_1.default.debug && changed && console.log(quest.QuestName.toUpperCase(), "\n");
     });
+    config_json_1.default.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!");
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config_json_1.default.seed);
 }
 exports.default = QuestChanger;
