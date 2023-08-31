@@ -1,5 +1,5 @@
 
-# **Dushaoan's AlgorithmicQuestRandomizer**
+# **DewardianDev's AlgorithmicQuestRandomizer**
 
 === INSTALL STEPS ===
 
@@ -17,8 +17,8 @@ Example order.json with recommended mods:
 "ServerValueModifier",
 "zPOOP",
 "Lua-CustomSpawnPoints",
-"Dushaoan-XXXX",
-"Dushaoan-AlgorithmicQuestRandomizer"
+"DewardianDev-XXXX",
+"DewardianDev-AlgorithmicQuestRandomizer"
 ]
 }
 
