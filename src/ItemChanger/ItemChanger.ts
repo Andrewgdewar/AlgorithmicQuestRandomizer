@@ -1,11 +1,13 @@
 import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
 import { DependencyContainer } from "tsyringe";
-import config from "../config/config.json";
-import { AvailableForProps, IQuest } from "@spt-aki/models/eft/common/tables/IQuest";
-import { checkParentRecursive, keyParent, replaceTextForQuest, seededRandom, moneyParent, difficulties } from "./utils";
+import config from "../../config/config.json";
+import { IQuest } from "@spt-aki/models/eft/common/tables/IQuest";
+import { checkParentRecursive, keyParent, seededRandom, moneyParent, saveToFile } from "../utils";
+import { difficulties, replaceTextForQuest } from "./ItemChangerUtils";
 
+const fs = require("fs");
 
-export default function QuestChanger(
+export default function ItemChanger(
     container: DependencyContainer
 ): undefined {
     const tables = container.resolve<DatabaseServer>("DatabaseServer").getTables();
@@ -106,14 +108,10 @@ export default function QuestChanger(
 
                     numOfChangedItems++
                     changed = true
-
                     currentlyUsed.add(alternateId + _parent)
                 }
             }
         })
-        // if (quest._id === "5ae4495c86f7744e87761355") console.log(JSON.stringify(quest))
-        config.debug && changed && console.log(quest.QuestName.toUpperCase(), "\n")
-
     })
     config.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!")
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config.seed)

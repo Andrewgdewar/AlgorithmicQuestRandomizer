@@ -3,12 +3,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_json_1 = __importDefault(require("../config/config.json"));
-const utils_1 = require("./utils");
-function QuestChanger(container) {
+const config_json_1 = __importDefault(require("../../config/config.json"));
+const utils_1 = require("../utils");
+const ItemChangerUtils_1 = require("./ItemChangerUtils");
+const fs = require("fs");
+function ItemChanger(container) {
     const tables = container.resolve("DatabaseServer").getTables();
     const items = tables.templates.items;
+    const traders = tables.traders;
     const quests = tables.templates.quests;
+    // const print = {}
+    // Object.values(quests).forEach(({ QuestName, _id, traderId, type, conditions: { AvailableForStart }, rewards: { Success } }) => {
+    //     print[QuestName.replaceAll(" ", "")] = ({
+    //         _id, name: traders[traderId].base.nickname + traderId, type, conditions: { AvailableForStart }, rewards: { Success }
+    //     })
+    // })    
+    (0, utils_1.saveToFile)(traders, "src/refDBS/traderRefs.json");
+    (0, utils_1.saveToFile)(quests, "src/refDBS/questRefs.json");
+    (0, utils_1.saveToFile)(items, "src/refDBS/itemsRef.json");
+    // console.log(JSON.stringify(print))
     const locales = tables.locales;
     const local = locales.global.en;
     const loot = tables.loot.staticLoot;
@@ -33,7 +46,7 @@ function QuestChanger(container) {
     });
     const getAlternate = (target, currentlyUsed, questId, parent, value) => {
         let quantity = Number(value);
-        const { high, low } = utils_1.difficulties[config_json_1.default.difficulty];
+        const { high, low } = ItemChangerUtils_1.difficulties[config_json_1.default.difficulty];
         const itemsParent = items[target]._parent;
         const itemsRarity = parentMapper[itemsParent][target];
         const alternates = Object.keys(parentMapper[itemsParent]).filter(itemId => {
@@ -67,7 +80,7 @@ function QuestChanger(container) {
                     const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value);
                     if (!alternateId || !items[alternateId])
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
-                    const questReqId = (0, utils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId, _props);
+                    const questReqId = (0, ItemChangerUtils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId, _props);
                     if (!questReqId)
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
                     const propsIdCopy = _props.id;
@@ -102,10 +115,10 @@ function QuestChanger(container) {
                 }
             }
         });
-        // if (quest._id === "5ae4495c86f7744e87761355") console.log(JSON.stringify(quest))
-        config_json_1.default.debug && changed && console.log(quest.QuestName.toUpperCase(), "\n");
+        // config.debug && 
+        // changed && console.log(quest.QuestName.toUpperCase(), quest._id, "\n")
     });
     config_json_1.default.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!");
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config_json_1.default.seed);
 }
-exports.default = QuestChanger;
+exports.default = ItemChanger;
