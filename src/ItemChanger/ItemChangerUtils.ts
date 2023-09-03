@@ -54,13 +54,13 @@ export const replaceTextForQuest = (locales: ILocaleBase, refId: string, target:
         const itemNameMulti = local[itemNameId]
         const itemShortNameMulti = local[itemShortNameId]
 
-        if (questDescription.includes(itemNameMulti) || questDescription.includes(itemShortNameMulti)) {
-            local[itemDescriptionId] = questDescription.replaceAll(itemNameMulti, alternateName).replaceAll(itemShortNameMulti, alternateShortName)
-        }
-
-        if (!local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
+        if (!questDescription || !local[refId] || !local[itemNameId] || !local[itemShortNameId] || !local[alternateNameId] || !local[alternateShortNameId]) {
             console.warn("AlgorithmicQuestRandomizer:", local[refId], "NOT Replaced for language:", locales.languages[language], "missing value: ", local[refId], local[itemNameId], local[itemShortNameId], local[alternateNameId], local[alternateShortNameId])
             return ""
+        }
+
+        if (questDescription?.includes(itemNameMulti) || questDescription.includes(itemShortNameMulti)) {
+            local[itemDescriptionId] = questDescription.replaceAll(itemNameMulti, alternateName).replaceAll(itemShortNameMulti, alternateShortName)
         }
 
         const final = localesConfig?.[language]?.[type] || localesConfig?.["en"]?.[type]

@@ -10,18 +10,7 @@ const fs = require("fs");
 function ItemChanger(container) {
     const tables = container.resolve("DatabaseServer").getTables();
     const items = tables.templates.items;
-    const traders = tables.traders;
     const quests = tables.templates.quests;
-    // const print = {}
-    // Object.values(quests).forEach(({ QuestName, _id, traderId, type, conditions: { AvailableForStart }, rewards: { Success } }) => {
-    //     print[QuestName.replaceAll(" ", "")] = ({
-    //         _id, name: traders[traderId].base.nickname + traderId, type, conditions: { AvailableForStart }, rewards: { Success }
-    //     })
-    // })    
-    (0, utils_1.saveToFile)(traders, "src/refDBS/traderRefs.json");
-    (0, utils_1.saveToFile)(quests, "src/refDBS/questRefs.json");
-    (0, utils_1.saveToFile)(items, "src/refDBS/itemsRef.json");
-    // console.log(JSON.stringify(print))
     const locales = tables.locales;
     const local = locales.global.en;
     const loot = tables.loot.staticLoot;
@@ -115,8 +104,6 @@ function ItemChanger(container) {
                 }
             }
         });
-        // config.debug && 
-        // changed && console.log(quest.QuestName.toUpperCase(), quest._id, "\n")
     });
     config_json_1.default.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!");
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config_json_1.default.seed);
