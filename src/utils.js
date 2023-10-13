@@ -3,10 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkParentRecursive = exports.seededRandom = exports.saveToFile = exports.stringToNum = exports.moneyParent = exports.keyParent = void 0;
+exports.checkParentRecursive = exports.seededRandom = exports.saveToFile = exports.stringToNum = exports.armorParent = exports.moneyParent = exports.keyParent = void 0;
 const config_json_1 = __importDefault(require("../config/config.json"));
 exports.keyParent = "543be5e94bdc2df1348b4568";
 exports.moneyParent = "543be5dd4bdc2deb348b4569";
+exports.armorParent = "5448e54d4bdc2dcc718b4568";
 const chars = " abcdefghijklmnopqrstuvwxyz1234567890".split("");
 const stringToNum = (str) => {
     if (!str)

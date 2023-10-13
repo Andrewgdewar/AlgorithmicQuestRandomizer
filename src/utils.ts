@@ -3,6 +3,7 @@ import config from "../config/config.json";
 
 export const keyParent = "543be5e94bdc2df1348b4568"
 export const moneyParent = "543be5dd4bdc2deb348b4569"
+export const armorParent = "5448e54d4bdc2dcc718b4568"
 const chars = " abcdefghijklmnopqrstuvwxyz1234567890".split("")
 
 export const stringToNum = (str: string) => {

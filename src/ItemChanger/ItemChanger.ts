@@ -2,7 +2,7 @@ import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
 import { DependencyContainer } from "tsyringe";
 import config from "../../config/config.json";
 import { IQuest } from "@spt-aki/models/eft/common/tables/IQuest";
-import { checkParentRecursive, keyParent, seededRandom, moneyParent, saveToFile } from "../utils";
+import { checkParentRecursive, keyParent, seededRandom, moneyParent, saveToFile, armorParent } from "../utils";
 import { difficulties, replaceTextForQuest } from "./ItemChangerUtils";
 
 const fs = require("fs");
@@ -73,8 +73,8 @@ export default function ItemChanger(
                 if (!_props?.target) return;
                 const target = _props.target?.[0] || _props.target as string;
 
-                if (changeItems[target] && !checkParentRecursive(target, items, [moneyParent])) {
-                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value)
+                if (changeItems[target] && !checkParentRecursive(target, items, [moneyParent, armorParent])) {
+                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, Number(_props.value))
                     if (!alternateId || !items[alternateId]) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)
                     const questReqId = replaceTextForQuest(locales, _props.id, target, alternateId, questId, _props)
                     if (!questReqId) return config.debug && console.log('Not Changing Item: ', items[target]?._name, target)

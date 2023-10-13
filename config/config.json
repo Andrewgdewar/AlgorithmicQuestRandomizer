@@ -8,7 +8,7 @@
         "masochist",
         "random"
     ],
-    "maxQuantityModifier": 1.8,
+    "maxQuantityModifier": 1.5,
     "seed": 21231231,
     "debug": false
 }

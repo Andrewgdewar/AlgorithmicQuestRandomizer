@@ -65,8 +65,8 @@ function ItemChanger(container) {
                 if (!_props?.target)
                     return;
                 const target = _props.target?.[0] || _props.target;
-                if (changeItems[target] && !(0, utils_1.checkParentRecursive)(target, items, [utils_1.moneyParent])) {
-                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, _props.value);
+                if (changeItems[target] && !(0, utils_1.checkParentRecursive)(target, items, [utils_1.moneyParent, utils_1.armorParent])) {
+                    const { alternateId, quantity } = getAlternate(target, currentlyUsed, questId, _parent, Number(_props.value));
                     if (!alternateId || !items[alternateId])
                         return config_json_1.default.debug && console.log('Not Changing Item: ', items[target]?._name, target);
                     const questReqId = (0, ItemChangerUtils_1.replaceTextForQuest)(locales, _props.id, target, alternateId, questId, _props);
