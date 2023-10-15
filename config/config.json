@@ -1,5 +1,5 @@
 {
-    "enable": false,
+    "enable": true,
     "difficulty": "medium",
     "EXAMPLE_DIFFICULTY_Values_FOR_ABOVE": [
         "easy",
@@ -10,5 +10,5 @@
     ],
     "maxQuantityModifier": 1.5,
     "seed": 1337,
-    "debug": true
+    "debug": false
 }
