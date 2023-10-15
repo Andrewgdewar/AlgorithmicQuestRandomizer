@@ -113,6 +113,5 @@ export default function ItemChanger(
             }
         })
     })
-    config.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!")
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config.seed)
 }

@@ -9,6 +9,6 @@
         "random"
     ],
     "maxQuantityModifier": 1.5,
-    "seed": 21231231,
-    "debug": false
+    "seed": 1337,
+    "debug": true
 }

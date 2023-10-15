@@ -105,7 +105,6 @@ function ItemChanger(container) {
             }
         });
     });
-    config_json_1.default.debug && console.log("Fixed", fixedVisibilityRefs, "visibilty references, thanks EthicsGradient!");
     console.log('AlgorithmicQuestRandomizer: Successfully changed:', numOfChangedItems, "quest items with seed:", config_json_1.default.seed);
 }
 exports.default = ItemChanger;
